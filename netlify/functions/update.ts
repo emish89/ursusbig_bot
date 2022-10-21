@@ -1,5 +1,6 @@
 import { Handler } from "@netlify/functions";
 import { Event } from "@netlify/functions/dist/function/event";
+import axios from "axios";
 
 const parseCommand = (message: string) => {
   const tokens = message.split(" ");
@@ -15,8 +16,13 @@ const parseCommand = (message: string) => {
   return command;
 };
 
-const bot = (params: string[]) => {
-  console.log("!bot!", params);
+const bot = async (id, params: string[]) => {
+  const url = `https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`;
+  console.log("!bot!", params, id, url);
+  await axios.post(url, {
+    chat_id: id,
+    text: "I got your message!",
+  });
   return {
     statusCode: 200,
     body: JSON.stringify({ message: "called fn bot with params " + params }),
@@ -27,6 +33,7 @@ const commands = {
 };
 
 const handler: Handler = async (event: Event) => {
+  console.log(process.env);
   console.log("Received an update from Telegram!", event.body);
   // Message
   if (!event.body) {
@@ -49,7 +56,10 @@ const handler: Handler = async (event: Event) => {
       body: JSON.stringify({ message: "Errore comando non trovato" }),
     };
   }
-  return commands[commandKeys[0]](commandArguments[commandKeys[0]]);
+  return commands[commandKeys[0]](
+    jsonBody.message.chat.id,
+    commandArguments[commandKeys[0]]
+  );
 };
 
 export { handler };

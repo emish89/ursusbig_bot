@@ -18,6 +18,10 @@
   },
   "homepage": "https://github.com/emish89/ursusbig_bot#readme",
   "dependencies": {
-    "@netlify/functions": "^1.3.0"
+    "@netlify/functions": "^1.3.0",
+    "axios": "^1.1.3"
+  },
+  "devDependencies": {
+    "@types/node": "^18.11.3"
   }
 }
