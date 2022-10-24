@@ -35,7 +35,7 @@ const handler: Handler = async (event: Event) => {
     };
   }
   return commands[commandKeys[0]](
-    jsonBody.message.chat.id,
+    jsonBody.message.chat,
     commandArguments[commandKeys[0]]
   );
 };

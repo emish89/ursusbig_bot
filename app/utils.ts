@@ -1,5 +1,7 @@
 import axios from "axios";
 
+export const ursusTgId = 112196086;
+
 export const sendMessage = async (chat_id: number, text: string) => {
   await axios.post(
     `https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`,
