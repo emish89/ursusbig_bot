@@ -6,7 +6,7 @@ export const calendar = async (chat: Chat, params: string[]) => {
   sendMessage(chat.id, "Prendi appuntamento con Ursus da questo link ... ");
   sendMessage(
     ursusTgId,
-    chat.username + " ha aperto calendly per prendere appuntamento"
+    `${chat.username} ha aperto calendly per prendere appuntamento`
   );
   return {
     statusCode: 200,

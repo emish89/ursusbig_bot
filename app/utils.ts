@@ -27,3 +27,34 @@ export const parseCommand = (message: string) => {
   }
   return command;
 };
+
+export const getAirTableUserById = async (id: number) => {
+  const url = `https://api.airtable.com/v0/appkyyf1lUUVaIW0j/users?api_key=keyWVaX1m2lQSII9B&filterByFormula=({tg_id} = ${id})`;
+  const user = await axios.get(url);
+  return user;
+};
+
+export const createAirTableUser = async (
+  id: number,
+  name: string,
+  fileName: string
+) => {
+  const data = {
+    fields: {
+      name: name,
+      file_name: fileName,
+      tg_id: id,
+    },
+  };
+  const res = await axios.post(
+    "https://api.airtable.com/v0/appkyyf1lUUVaIW0j/users",
+    data,
+    {
+      headers: {
+        Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+  return res;
+};

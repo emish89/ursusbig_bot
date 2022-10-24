@@ -1,59 +1,54 @@
-const { google } = require("googleapis");
-
-// If modifying these scopes, delete token.json.
-const SCOPES = [
-  "https://www.googleapis.com/auth/documents",
-  "https://www.googleapis.com/auth/drive",
-];
+import { GaxiosResponse } from "gaxios";
+import { JSONClient } from "google-auth-library/build/src/auth/googleauth";
+import { google } from "googleapis";
 
 /**
  * Reads previously authorized credentials from the save file.
- *
- * @return {Promise<OAuth2Client|null>}
  */
-const loadSavedCredentialsIfExist = async () => {
-  try {
-    const token = process.env.GCP_TOKEN;
-    if (token) {
-      const credentials = JSON.parse(token);
-      return google.auth.fromJSON(credentials);
+export const loadSavedCredentials: () => Promise<JSONClient | null> =
+  async () => {
+    try {
+      const token = process.env.GCP_TOKEN;
+      if (token) {
+        const credentials = JSON.parse(token);
+        return google.auth.fromJSON(credentials);
+      }
+    } catch (err) {
+      console.log(err);
     }
-  } catch (err) {
-    console.log(err);
-  }
-  return null;
-};
+    return null;
+  };
 
 /**
- * Prints the title of a sample doc:
- * https://docs.google.com/document/d/195j9eDD3ccgjQRttHhJPymLJUCOUjs-jmwTrekvdjFE/edit
- * @param {google.auth.OAuth2} auth The authenticated Google OAuth 2.0 client.
+ * Create doc file and return the id
  */
-async function printDocTitle(auth) {
-  const docs = google.docs({ version: "v1", auth });
-  const res = await docs.documents.create({
-    title: "F B",
-  });
-  const drive = google.drive({ version: "v3", auth });
-  console.log(`The title of the document is: ${res.data.documentId}`, res.data);
-
-  drive.permissions.create(
-    {
+export const createDocFile: (
+  auth: JSONClient | null,
+  name: string
+) => Promise<string | null | undefined> = async (auth, name) => {
+  if (auth !== null) {
+    const docs = google.docs({ version: "v1", auth });
+    const fileProperties: any = {
+      title: name,
+    };
+    const res = await docs.documents.create(fileProperties);
+    const drive = google.drive({ version: "v3", auth });
+    console.log(`The title of the document is: ${res.data.documentId}`);
+    const permissionProperties: any = {
       resource: {
         type: "anyone",
         role: "commenter",
       },
       fileId: res.data.documentId,
       fields: "id",
-    },
-    function (err, res) {
-      if (err) {
-        // Handle error
-        console.log(err);
-      } else {
-        console.log("Permission ID: ", res);
-      }
-    }
-  );
-}
-loadSavedCredentialsIfExist().then(printDocTitle).catch(console.error);
+    };
+    await drive.permissions
+      .create(permissionProperties)
+      .catch((error) => console.log(error));
+    console.log("Permission ID created");
+    return res.data.documentId;
+  } else {
+    console.log("auth is null. Cannot create file");
+  }
+  return null;
+};
