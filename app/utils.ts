@@ -1,9 +1,10 @@
 import axios from "axios";
 
 export const ursusTgId = 112196086;
+export const airTableLink = "appkyyf1lUUVaIW0j";
 
 export const sendMessage = async (chat_id: number, text: string) => {
-  await axios.post(
+  const resp = await axios.post(
     `https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`,
     {
       chat_id,
@@ -11,7 +12,19 @@ export const sendMessage = async (chat_id: number, text: string) => {
     }
   );
 
-  return true;
+  return resp;
+};
+
+export const pinChatMessage = async (chat_id: number, message_id: number) => {
+  const resp = await axios.post(
+    `https://api.telegram.org/bot${process.env.BOT_TOKEN}/pinChatMessage`,
+    {
+      chat_id,
+      message_id,
+    }
+  );
+
+  return resp;
 };
 
 export const parseCommand = (message: string) => {
@@ -29,7 +42,7 @@ export const parseCommand = (message: string) => {
 };
 
 export const getAirTableUserById = async (id: number) => {
-  const url = `https://api.airtable.com/v0/appkyyf1lUUVaIW0j/users?api_key=${process.env.AIRTABLE_API_KEY}&filterByFormula=({tg_id} = ${id})`;
+  const url = `https://api.airtable.com/v0/${airTableLink}/users?api_key=${process.env.AIRTABLE_API_KEY}&filterByFormula=({tg_id} = ${id})`;
   const user = await axios.get(url);
   return user;
 };
@@ -47,7 +60,7 @@ export const createAirTableUser = async (
     },
   };
   const res = await axios.post(
-    "https://api.airtable.com/v0/appkyyf1lUUVaIW0j/users",
+    `https://api.airtable.com/v0/${airTableLink}/users`,
     data,
     {
       headers: {

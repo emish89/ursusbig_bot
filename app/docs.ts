@@ -3,6 +3,7 @@ import { Chat } from "./types";
 import {
   createAirTableUser,
   getAirTableUserById,
+  pinChatMessage,
   sendMessage,
   ursusTgId,
 } from "./utils";
@@ -21,7 +22,12 @@ export const docs = async (chat: Chat) => {
             sendMessage(
               chat.id,
               `Ciao ${chat.username}! Ho creato il tuo file, sarà visibile il prima possibile da questo link: ${fileName}`
-            );
+            ).then((res) => {
+              const messageId = res.data.result.message_id;
+              //pin message
+              pinChatMessage(chat.id, messageId);
+              console.log("pinned message with id: ", messageId);
+            });
             sendMessage(
               ursusTgId,
               `${chat.username} ha creato il suo file scheda, cerca di riempirlo il prima possibile`
