@@ -29,7 +29,7 @@ export const parseCommand = (message: string) => {
 };
 
 export const getAirTableUserById = async (id: number) => {
-  const url = `https://api.airtable.com/v0/appkyyf1lUUVaIW0j/users?api_key=keyWVaX1m2lQSII9B&filterByFormula=({tg_id} = ${id})`;
+  const url = `https://api.airtable.com/v0/appkyyf1lUUVaIW0j/users?api_key=${process.env.AIRTABLE_API_KEY}&filterByFormula=({tg_id} = ${id})`;
   const user = await axios.get(url);
   return user;
 };
