@@ -20,6 +20,9 @@ const handler: Handler = async (event: Event) => {
     return { statusCode: 200, body: "No body" };
   }
   const jsonBody = JSON.parse(event.body);
+  if (!jsonBody.message) {
+    return { statusCode: 200, body: "No message" };
+  }
   const message = jsonBody.message.text;
   if (jsonBody.message.from.is_bot) {
     return {
