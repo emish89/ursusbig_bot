@@ -15,7 +15,7 @@ export const sendMessage: (
       text,
     })
     .then((res) => {
-      console.log(res);
+      //console.log(res);
     })
     .catch((err) => {
       console.log(err);
@@ -30,12 +30,12 @@ export const pinChatMessage: (
 ) => Promise<any> = async (chat_id, message_id) => {
   const url = `https://api.telegram.org/bot${process.env.BOT_TOKEN}/pinChatMessage`;
   console.log("pin message", url);
-  const resp = await axios.post(url, {
-    chat_id,
-    message_id,
-  });
+  // const resp = await axios.post(url, {
+  //   chat_id,
+  //   message_id,
+  // });
 
-  return resp;
+  return true;
 };
 
 export const parseCommand = (message: string) => {
