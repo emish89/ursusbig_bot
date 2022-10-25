@@ -1,14 +1,16 @@
 import { Handler } from "@netlify/functions";
 import { Event } from "@netlify/functions/dist/function/event";
 import { parseCommand } from "../../app/utils";
-import { bot } from "../../app/bot";
+import { help } from "../../app/help";
 import { docs } from "../../app/docs";
 import { calendar } from "../../app/calendar";
+import { card } from "../../app/card";
 
 const commands = {
-  bot,
+  help,
   docs,
   calendar,
+  card,
 };
 
 const handler: Handler = async (event: Event) => {
