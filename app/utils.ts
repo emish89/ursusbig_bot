@@ -9,10 +9,17 @@ export const sendMessage: (
 ) => Promise<any> = async (chat_id, text) => {
   const url = `https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`;
   console.log("send message", url);
-  const resp = await axios.post(url, {
-    chat_id,
-    text,
-  });
+  const resp = await axios
+    .post(url, {
+      chat_id,
+      text,
+    })
+    .then((res) => {
+      console.log(res);
+    })
+    .catch((err) => {
+      console.log(err);
+    });
 
   return resp;
 };
