@@ -19,7 +19,12 @@ const handler: Handler = async (event: Event) => {
   }
   const jsonBody = JSON.parse(event.body);
   const message = jsonBody.message.text;
-
+  if (jsonBody.message.from.is_bot) {
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ message: "Messaggio ricevuto da bot!" }),
+    };
+  }
   const commandArguments = parseCommand(message.trim());
   if (commandArguments === null) {
     return {
