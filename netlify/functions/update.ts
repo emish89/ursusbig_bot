@@ -14,6 +14,8 @@ const commands = {
   start: help,
 };
 
+const delay = (ms) => new Promise((res) => setTimeout(res, ms));
+
 const handler: Handler = async (event: Event) => {
   console.log(
     new Date().toLocaleString() + " Received an update from Telegram!",
@@ -52,6 +54,8 @@ const handler: Handler = async (event: Event) => {
     jsonBody.message.chat,
     commandArguments[commandKeys[0]]
   );
+
+  await delay(30000);
   console.log("finish 200");
   return {
     statusCode: 200,
