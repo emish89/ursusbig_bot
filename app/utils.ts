@@ -9,12 +9,12 @@ export const sendMessage: (
 ) => Promise<any> = async (chat_id, text) => {
   const url = `https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`;
   console.log("send message", url);
-  // const resp = await axios.post(url, {
-  //   chat_id,
-  //   text,
-  // });
+  const resp = await axios.post(url, {
+    chat_id,
+    text,
+  });
 
-  return true;
+  return resp;
 };
 
 export const pinChatMessage: (
@@ -23,15 +23,12 @@ export const pinChatMessage: (
 ) => Promise<any> = async (chat_id, message_id) => {
   const url = `https://api.telegram.org/bot${process.env.BOT_TOKEN}/pinChatMessage`;
   console.log("pin message", url);
-  // const resp = await axios.post(
-  //   url,
-  //   {
-  //     chat_id,
-  //     message_id,
-  //   }
-  // );
+  const resp = await axios.post(url, {
+    chat_id,
+    message_id,
+  });
 
-  return true;
+  return resp;
 };
 
 export const parseCommand = (message: string) => {
