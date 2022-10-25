@@ -11,6 +11,7 @@ const commands = {
   docs,
   calendar,
   card,
+  start: help,
 };
 
 const handler: Handler = async (event: Event) => {
