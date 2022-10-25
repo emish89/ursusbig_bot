@@ -12,10 +12,9 @@ Puoi usare i seguenti comandi: \n
 /card - Crea o rimanda e pinna il link alla scheda di allenamento
 /calendar - Ti invia il link con cui puoi prenotare una chiamata con Ursus
 `
-  ).then(() => {
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ message: "called fn help" }),
-    };
-  });
+  );
+  return {
+    statusCode: 200,
+    body: JSON.stringify({ message: "called fn help" }),
+  };
 };

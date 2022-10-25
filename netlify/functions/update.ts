@@ -48,10 +48,13 @@ const handler: Handler = async (event: Event) => {
       body: JSON.stringify({ message: "Errore - Comando non trovato" }),
     };
   }
-  return commands[commandKeys[0]](
+  commands[commandKeys[0]](
     jsonBody.message.chat,
     commandArguments[commandKeys[0]]
   );
+  return {
+    statusCode: 200,
+  };
 };
 
 export { handler };
