@@ -17,16 +17,21 @@ export const sendMessage: (
   return true;
 };
 
-export const pinChatMessage = async (chat_id: number, message_id: number) => {
-  const resp = await axios.post(
-    `https://api.telegram.org/bot${process.env.BOT_TOKEN}/pinChatMessage`,
-    {
-      chat_id,
-      message_id,
-    }
-  );
+export const pinChatMessage: (
+  chat_id: number,
+  message_id: number
+) => Promise<any> = async (chat_id, message_id) => {
+  const url = `https://api.telegram.org/bot${process.env.BOT_TOKEN}/pinChatMessage`;
+  console.log("pin message", url);
+  // const resp = await axios.post(
+  //   url,
+  //   {
+  //     chat_id,
+  //     message_id,
+  //   }
+  // );
 
-  return resp;
+  return true;
 };
 
 export const parseCommand = (message: string) => {
