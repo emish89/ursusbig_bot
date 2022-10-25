@@ -3,14 +3,18 @@ import axios from "axios";
 export const ursusTgId = 112196086;
 export const airTableLink = "appkyyf1lUUVaIW0j";
 
-export const sendMessage = async (chat_id: number, text: string) => {
+export const sendMessage: (
+  chat_id: number,
+  text: string
+) => Promise<any> = async (chat_id, text) => {
   const url = `https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`;
-  const resp = await axios.post(url, {
-    chat_id,
-    text,
-  });
+  console.log("send message", url);
+  // const resp = await axios.post(url, {
+  //   chat_id,
+  //   text,
+  // });
 
-  return resp;
+  return true;
 };
 
 export const pinChatMessage = async (chat_id: number, message_id: number) => {
