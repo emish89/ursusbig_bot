@@ -55,7 +55,7 @@ const handler: Handler = async (event: Event) => {
     commandArguments[commandKeys[0]]
   );
 
-  await delay(30000);
+  await delay(5000);
   console.log("finish 200");
   return {
     statusCode: 200,
