@@ -15,7 +15,10 @@ const commands = {
 };
 
 const handler: Handler = async (event: Event) => {
-  console.log("Received an update from Telegram!", event.body);
+  console.log(
+    new Date().toLocaleString() + " Received an update from Telegram!",
+    event.body
+  );
   // Message
   if (!event.body) {
     return { statusCode: 200, body: "No body" };
