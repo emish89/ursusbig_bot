@@ -52,7 +52,7 @@ const handler: Handler = async (event: Event) => {
     jsonBody.message.chat,
     commandArguments[commandKeys[0]]
   );
-  console.log("finish");
+  console.log("finish 200");
   return {
     statusCode: 200,
   };
