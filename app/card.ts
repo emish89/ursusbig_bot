@@ -8,8 +8,7 @@ import {
   ursusTgId,
 } from "./utils";
 
-export const card = async (chat: Chat) => {
-  console.log("!card!");
+const manageUser = async (chat: Chat) => {
   getAirTableUserById(chat.id).then((response) => {
     if (response.data.records.length === 0) {
       //I need to create the file and the user
@@ -44,9 +43,21 @@ export const card = async (chat: Chat) => {
       );
     }
   });
+};
+export const card = async (chat: Chat) => {
+  console.log("!card!");
 
-  return {
-    statusCode: 200,
-    body: JSON.stringify({ message: "called fn card" }),
-  };
+  manageUser(chat)
+    .then(() => {
+      return {
+        statusCode: 200,
+        body: JSON.stringify({ message: "called fn card" }),
+      };
+    })
+    .catch((err) => {
+      console.log(err);
+      return {
+        statusCode: 200,
+      };
+    });
 };

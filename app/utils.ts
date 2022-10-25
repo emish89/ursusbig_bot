@@ -5,7 +5,6 @@ export const airTableLink = "appkyyf1lUUVaIW0j";
 
 export const sendMessage = async (chat_id: number, text: string) => {
   const url = `https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`;
-  console.log("url:", url);
   const resp = await axios.post(url, {
     chat_id,
     text,
