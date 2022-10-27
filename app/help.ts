@@ -3,7 +3,7 @@ import { sendMessage } from "./utils";
 
 export const help = async (chat: Chat) => {
   console.log("!help!");
-  sendMessage(
+  await sendMessage(
     chat.id,
     `Tramite questo bot potrai avere accesso alla documentazione e le schede di Ursus. 
 Puoi usare i seguenti comandi: \n
