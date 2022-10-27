@@ -11,9 +11,9 @@ export const docs = async (chat: Chat) => {
     //pin message
     await pinChatMessage(chat.id, messageId);
     console.log("pinned docs message with id: ", messageId);
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ message: "called fn docs" }),
-    };
   });
+  return {
+    statusCode: 200,
+    body: JSON.stringify({ message: "called fn docs" }),
+  };
 };

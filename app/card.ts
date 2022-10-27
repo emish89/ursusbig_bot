@@ -51,17 +51,11 @@ const manageUser = async (chat: Chat) => {
 export const card = async (chat: Chat) => {
   console.log("!card!");
 
-  await manageUser(chat)
-    .then(() => {
-      return {
-        statusCode: 200,
-        body: JSON.stringify({ message: "called fn card" }),
-      };
-    })
-    .catch((err) => {
-      console.log(err);
-      return {
-        statusCode: 200,
-      };
-    });
+  await manageUser(chat).catch((err) => {
+    console.log(err);
+  });
+  return {
+    statusCode: 200,
+    body: JSON.stringify({ message: "called fn card" }),
+  };
 };

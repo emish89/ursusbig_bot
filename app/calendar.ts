@@ -9,10 +9,9 @@ export const calendar = async (chat: Chat, params: string[]) => {
       ursusTgId,
       `${chat.username} ha aperto calendly per prendere appuntamento`
     ),
-  ]).then(() => {
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ message: "called fn calendar" }),
-    };
-  });
+  ]);
+  return {
+    statusCode: 200,
+    body: JSON.stringify({ message: "called fn calendar" }),
+  };
 };
