@@ -19,21 +19,24 @@ const handler: Handler = async (event: Event) => {
     new Date().toLocaleString() + " Received an update from Telegram!",
     event.body
   );
+  //This is to avoid timeout errors and continuing to perform the same function
   setTimeout(() => {
-    console.log("timeout");
     console.log("finish 200 for timeout");
     return {
       statusCode: 200,
     };
-  }, 8000);
+  }, 9500);
+
   // Message
   if (!event.body) {
     return { statusCode: 200, body: "No body" };
   }
+
   const jsonBody = JSON.parse(event.body);
   if (!jsonBody.message) {
     return { statusCode: 200, body: "No message" };
   }
+
   const message = jsonBody.message.text;
   if (jsonBody.message.from.is_bot) {
     return {

@@ -3,7 +3,7 @@ import { sendMessage, ursusTgId } from "./utils";
 
 export const calendar = async (chat: Chat, params: string[]) => {
   console.log("!calendar!");
-  Promise.all([
+  await Promise.all([
     sendMessage(chat.id, "Prendi appuntamento con Ursus da questo link ... "),
     sendMessage(
       ursusTgId,

@@ -14,9 +14,6 @@ export const sendMessage: (
       chat_id,
       text,
     })
-    .then((res) => {
-      //console.log(res);
-    })
     .catch((err) => {
       console.log(err);
     });
@@ -30,10 +27,10 @@ export const pinChatMessage: (
 ) => Promise<any> = async (chat_id, message_id) => {
   const url = `https://api.telegram.org/bot${process.env.BOT_TOKEN}/pinChatMessage`;
   console.log("pin message", url);
-  // const resp = await axios.post(url, {
-  //   chat_id,
-  //   message_id,
-  // });
+  await axios.post(url, {
+    chat_id,
+    message_id,
+  });
 
   return true;
 };
@@ -82,3 +79,5 @@ export const createAirTableUser = async (
   );
   return res;
 };
+
+export const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
