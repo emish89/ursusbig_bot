@@ -14,13 +14,18 @@ const commands = {
   start: help,
 };
 
-const delay = (ms) => new Promise((res) => setTimeout(res, ms));
-
 const handler: Handler = async (event: Event) => {
   console.log(
     new Date().toLocaleString() + " Received an update from Telegram!",
     event.body
   );
+  setTimeout(() => {
+    console.log("timeout");
+    console.log("finish 200 for timeout");
+    return {
+      statusCode: 200,
+    };
+  }, 8000);
   // Message
   if (!event.body) {
     return { statusCode: 200, body: "No body" };
@@ -50,16 +55,12 @@ const handler: Handler = async (event: Event) => {
       body: JSON.stringify({ message: "Errore - Comando non trovato" }),
     };
   }
-  commands[commandKeys[0]](
+  const res = await commands[commandKeys[0]](
     jsonBody.message.chat,
     commandArguments[commandKeys[0]]
   );
-
-  await delay(5000);
-  console.log("finish 200");
-  return {
-    statusCode: 200,
-  };
+  console.log("finish", res);
+  return res;
 };
 
 export { handler };
