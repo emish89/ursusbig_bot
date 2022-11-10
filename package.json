@@ -24,6 +24,6 @@
     "googleapis": "^109.0.0"
   },
   "devDependencies": {
-    "@types/node": "18.11.8"
+    "@types/node": "18.11.9"
   }
 }
