@@ -1,4 +1,5 @@
 import axios from "axios";
+import https from "https";
 
 export const ursusTgId = 112196086;
 export const airTableLink = "appkyyf1lUUVaIW0j";
@@ -7,30 +8,49 @@ export const sendMessage: (
   chat_id: number,
   text: string
 ) => Promise<any> = async (chat_id, text) => {
-  const url = `https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`;
-  console.log("send message", url);
-  const resp = await axios
-    .post(url, {
-      chat_id,
-      text,
-    })
-    .catch((err) => {
-      console.log(err);
-    });
-
-  return resp;
+  console.log(
+    `send message url: https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`
+  );
+  const payload = JSON.stringify({
+    chat_id,
+    text,
+  });
+  const options = {
+    hostname: "api.telegram.org",
+    port: 443,
+    path: `/bot${process.env.BOT_TOKEN}/sendMessage`,
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Content-Length": payload.length,
+    },
+  };
+  const call = await postCall(options, payload);
+  return call;
 };
 
 export const pinChatMessage: (
   chat_id: number,
   message_id: number
-) => Promise<any> = async (chat_id, message_id) => {
-  const url = `https://api.telegram.org/bot${process.env.BOT_TOKEN}/pinChatMessage`;
-  console.log("pin message", url);
-  await axios.post(url, {
+) => Promise<boolean> = async (chat_id, message_id) => {
+  console.log(
+    `pin message url: https://api.telegram.org/bot${process.env.BOT_TOKEN}/pinChatMessage`
+  );
+  const payload = JSON.stringify({
     chat_id,
     message_id,
   });
+  const options = {
+    hostname: "api.telegram.org",
+    port: 443,
+    path: `/bot${process.env.BOT_TOKEN}/pinChatMessage`,
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Content-Length": payload.length,
+    },
+  };
+  await postCall(options, payload);
 
   return true;
 };
@@ -81,3 +101,31 @@ export const createAirTableUser = async (
 };
 
 export const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
+
+const postCall = (
+  options: string | https.RequestOptions | URL,
+  payload: string
+) => {
+  return new Promise((resolve, reject) => {
+    const req = https.request(options, (res) => {
+      let chunks = [] as Uint8Array[];
+      res.on("data", (chunk) => chunks.push(chunk));
+      res.on("end", () => {
+        const resBody = Buffer.concat(chunks).toString("utf8");
+        if (res.statusCode === 200) {
+          console.log(`Call successful - status 200`);
+          resolve(JSON.parse(resBody));
+        } else {
+          console.error(`${res.statusCode} ${res.statusMessage} ${res.headers["content - type"]}
+${resBody}`);
+          reject(new Error(resBody));
+        }
+      });
+    });
+    req.on("error", (error) => {
+      reject(error);
+    });
+    req.write(payload);
+    req.end();
+  });
+};
