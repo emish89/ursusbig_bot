@@ -1,5 +1,6 @@
 import axios from "axios";
 import https from "https";
+import { TelegramResponse } from "./types";
 
 export const ursusTgId = 112196086;
 export const airTableLink = "appkyyf1lUUVaIW0j";
@@ -106,7 +107,7 @@ const postCall = (
   options: string | https.RequestOptions | URL,
   payload: string
 ) => {
-  return new Promise((resolve, reject) => {
+  return new Promise<TelegramResponse | Error>((resolve, reject) => {
     const req = https.request(options, (res) => {
       let chunks = [] as Uint8Array[];
       res.on("data", (chunk) => chunks.push(chunk));
