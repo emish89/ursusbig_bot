@@ -1,4 +1,4 @@
-import { createDocFile, loadSavedCredentials } from "./gcpUtils";
+import { createGDocsFile, loadSavedCredentials } from "./gcpUtils";
 import { Chat } from "./types";
 import {
   createAirTableUser,
@@ -14,7 +14,7 @@ const manageUser = async (chat: Chat) => {
       //I need to create the file and the user
       //I create the file
       loadSavedCredentials().then((auth) => {
-        createDocFile(auth, chat.username).then((docId) => {
+        createGDocsFile(auth, chat.username).then((docId) => {
           //then I create the user
           const fileName = `https://docs.google.com/document/d/${docId}/edit`;
           createAirTableUser(chat.id, chat.username, fileName).then(

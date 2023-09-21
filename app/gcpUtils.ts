@@ -1,11 +1,10 @@
-import { GaxiosResponse } from "gaxios";
-import { JSONClient } from "google-auth-library/build/src/auth/googleauth";
 import { google } from "googleapis";
+import { GoogleAuthType } from "./types";
 
 /**
  * Reads previously authorized credentials from the save file.
  */
-export const loadSavedCredentials: () => Promise<JSONClient | null> =
+export const loadSavedCredentials: () => Promise<GoogleAuthType | null> =
   async () => {
     try {
       const token = process.env.GCP_TOKEN;
@@ -22,8 +21,8 @@ export const loadSavedCredentials: () => Promise<JSONClient | null> =
 /**
  * Create doc file and return the id
  */
-export const createDocFile: (
-  auth: JSONClient | null,
+export const createGDocsFile: (
+  auth: any,
   name: string
 ) => Promise<string | null | undefined> = async (auth, name) => {
   if (auth !== null) {

@@ -25,3 +25,17 @@ export type TelegramResponse = {
     text: string;
   };
 };
+
+export type GoogleAuthType = {
+  _events?: {};
+  _eventsCount?: number;
+  transporter: {};
+  credentials: {
+    refresh_token?: string | null | undefined;
+  };
+  eagerRefreshThresholdMillis: number;
+  forceRefreshOnFailure: boolean;
+  _clientId?: string | undefined;
+  _clientSecret?: string | undefined;
+  _refreshToken?: string | null | undefined;
+};

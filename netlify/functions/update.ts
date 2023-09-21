@@ -1,5 +1,4 @@
 import { Handler } from "@netlify/functions";
-import { Event } from "@netlify/functions/dist/function/event";
 import { parseCommand } from "../../app/utils";
 import { help } from "../../app/help";
 import { docs } from "../../app/docs";
@@ -14,7 +13,7 @@ const commands = {
   start: help,
 };
 
-const handler: Handler = async (event: Event) => {
+const handler: Handler = async (event) => {
   console.log(
     new Date().toLocaleString() + " Received an update from Telegram!",
     event.body
