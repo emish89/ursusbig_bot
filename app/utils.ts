@@ -1,6 +1,6 @@
 import axios from "axios";
 import https from "https";
-import { TelegramResponse } from "./types";
+import { AirTableResponse, TelegramResponse } from "./types";
 
 export const ursusTgId = 112196086;
 export const airTableLink = "appkyyf1lUUVaIW0j";
@@ -8,7 +8,7 @@ export const airTableLink = "appkyyf1lUUVaIW0j";
 export const sendMessage: (
   chat_id: number,
   text: string
-) => Promise<any> = async (chat_id, text) => {
+) => Promise<TelegramResponse> = async (chat_id, text) => {
   console.log(
     `send message url: https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`
   );
@@ -26,7 +26,7 @@ export const sendMessage: (
       "Content-Length": payload.length,
     },
   };
-  const call = await doHttpRequest(options, payload);
+  const call = await doHttpRequest<TelegramResponse>(options, payload);
   return call;
 };
 
@@ -51,7 +51,7 @@ export const pinChatMessage: (
       "Content-Length": payload.length,
     },
   };
-  await doHttpRequest(options, payload);
+  await doHttpRequest<TelegramResponse>(options, payload);
 
   return true;
 };
@@ -78,10 +78,11 @@ export const getAirTableUserById = async (id: number) => {
     protocol: "https:",
     method: "GET",
   };
-  const user = await doHttpRequest(options);
+  const user = await doHttpRequest<AirTableResponse>(options);
   return user;
 };
 
+//deprecated function
 export const createAirTableUser = async (
   id: number,
   name: string,
@@ -109,11 +110,11 @@ export const createAirTableUser = async (
 
 export const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
-const doHttpRequest = (
+const doHttpRequest = <T>(
   options: string | https.RequestOptions | URL,
   payload?: string
 ) => {
-  return new Promise<TelegramResponse | any | Error>((resolve, reject) => {
+  return new Promise<T>((resolve, reject) => {
     const req = https.request(options, (res) => {
       let chunks = [] as Uint8Array[];
       res.on("data", (chunk) => chunks.push(chunk));

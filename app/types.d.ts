@@ -26,6 +26,10 @@ export type TelegramResponse = {
   };
 };
 
+export type AirTableResponse = {
+  records: any[];
+};
+
 export type GoogleAuthType = {
   _events?: {};
   _eventsCount?: number;

@@ -10,7 +10,6 @@ import {
 
 const manageUser = async (chat: Chat) => {
   await getAirTableUserById(chat.id).then(async (response) => {
-    if (response.data.records.length === 0) {
     if (response.records.length === 0) {
       //I need to create the file and the user
       //I create the file
@@ -25,7 +24,7 @@ const manageUser = async (chat: Chat) => {
                   chat.id,
                   `Ciao ${chat.username}! Ho creato il tuo file, sarà visibile il prima possibile da questo link: ${fileName}`
                 ).then((res) => {
-                  const messageId = res.data.result.message_id;
+                  const messageId = res.result.message_id;
                   //pin message
                   pinChatMessage(chat.id, messageId);
                   console.log("pinned card message with id: ", messageId);
