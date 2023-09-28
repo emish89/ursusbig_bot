@@ -26,7 +26,7 @@ export const sendMessage: (
       "Content-Length": payload.length,
     },
   };
-  const call = await postCall(options, payload);
+  const call = await doHttpRequest(options, payload);
   return call;
 };
 
@@ -51,7 +51,7 @@ export const pinChatMessage: (
       "Content-Length": payload.length,
     },
   };
-  await postCall(options, payload);
+  await doHttpRequest(options, payload);
 
   return true;
 };
@@ -71,8 +71,14 @@ export const parseCommand = (message: string) => {
 };
 
 export const getAirTableUserById = async (id: number) => {
-  const url = `https://api.airtable.com/v0/${airTableLink}/users?api_key=${process.env.AIRTABLE_API_KEY}&filterByFormula=({tg_id} = ${id})`;
-  const user = await axios.get(url);
+  var options = {
+    host: "api.airtable.com",
+    port: 443,
+    path: `/v0/${airTableLink}/users?api_key=${process.env.AIRTABLE_API_KEY}&filterByFormula=(%7Btg_id%7D+%3D+${id})`,
+    protocol: "https:",
+    method: "GET",
+  };
+  const user = await doHttpRequest(options);
   return user;
 };
 
@@ -103,11 +109,11 @@ export const createAirTableUser = async (
 
 export const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
-const postCall = (
+const doHttpRequest = (
   options: string | https.RequestOptions | URL,
-  payload: string
+  payload?: string
 ) => {
-  return new Promise<TelegramResponse | Error>((resolve, reject) => {
+  return new Promise<TelegramResponse | any | Error>((resolve, reject) => {
     const req = https.request(options, (res) => {
       let chunks = [] as Uint8Array[];
       res.on("data", (chunk) => chunks.push(chunk));
@@ -126,7 +132,9 @@ ${resBody}`);
     req.on("error", (error) => {
       reject(error);
     });
-    req.write(payload);
+    if (payload) {
+      req.write(payload);
+    }
     req.end();
   });
 };

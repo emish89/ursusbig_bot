@@ -11,6 +11,7 @@ import {
 const manageUser = async (chat: Chat) => {
   await getAirTableUserById(chat.id).then(async (response) => {
     if (response.data.records.length === 0) {
+    if (response.records.length === 0) {
       //I need to create the file and the user
       //I create the file
       loadSavedCredentials().then((auth) => {
@@ -40,7 +41,7 @@ const manageUser = async (chat: Chat) => {
       });
     } else {
       //user exists
-      const file = response.data.records[0].fields.file_name;
+      const file = response.records[0].fields.file_name;
       await sendMessage(
         chat.id,
         `Ciao ${chat.username}! Il link dove puoi trovare la gli esercizi è: ${file}`
