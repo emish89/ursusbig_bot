@@ -51,3 +51,51 @@ export const createGDocsFile: (
   }
   return null;
 };
+
+/**
+ * Prints data from google sheets file
+ * @param {google.auth.OAuth2} auth The authenticated Google OAuth 2.0 client.
+ */
+export const printSheet = async (auth) => {
+  const sheets = google.sheets({ version: "v4", auth });
+  sheets.spreadsheets.values.get(
+    {
+      auth: auth,
+      spreadsheetId: "1LBvM1Pc-KNHcxIhNWjDoIttF1lV4FDA2uo-07hBYC54",
+      range: "A2:BY",
+    },
+    (err, res) => {
+      if (err) {
+        console.error("The API returned an error.");
+        throw err;
+      }
+      const rows = res.data.values;
+      if (rows.length === 0) {
+        console.log("No data found.");
+      } else {
+        console.log("Scheda");
+        for (const row of rows) {
+          if (row[1] && row[2]) {
+            console.log("Programma", row[1], row[2]);
+          }
+          if (row[2] && row[4] && row[4] !== "#N/A") {
+            // Print columns C and E, which correspond to indices 2 and 4.
+            console.log("Nome esercizio: ", row[2], "Link video", row[4]);
+
+            for (let i = 0; i < 8; i++) {
+              console.log("Settimana ", i + 1);
+              console.log(
+                "N serie:",
+                row[7 + 9 * i],
+                "rep:",
+                row[8 + 9 * i],
+                "RPE:",
+                row[9 + 9 * i]
+              );
+            }
+          }
+        }
+      }
+    }
+  );
+};
