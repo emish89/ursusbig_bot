@@ -1,4 +1,4 @@
-import { createGDocsFile, loadSavedCredentials } from "./gcpUtils";
+import { createGDocsFile, loadSavedCredentials, printSheet } from "./gcpUtils";
 import { Chat } from "./types";
 import {
   createAirTableUser,
@@ -48,10 +48,35 @@ const manageUser = async (chat: Chat) => {
     }
   });
 };
+
+const manageUserSheet = async (chat: Chat) => {
+  await getAirTableUserById(chat.id).then(async (response) => {
+    if (response.records.length !== 0) {
+      const file = response.records[0].fields.file_name;
+
+      loadSavedCredentials().then((auth) => {
+        printSheet(auth, chat.username)
+          .then(async (message) => {
+            console.log(message);
+            await sendMessage(
+              chat.id,
+              `Ciao ${chat.username}! Il link dove puoi trovare la gli esercizi è: ${file}`
+            );
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      });
+    } else {
+      //user not existing
+    }
+  });
+};
+
 export const card = async (chat: Chat) => {
   console.log("!card!");
 
-  await manageUser(chat).catch((err) => {
+  await manageUserSheet(chat).catch((err) => {
     console.log(err);
   });
   return {

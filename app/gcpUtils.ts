@@ -56,7 +56,7 @@ export const createGDocsFile: (
  * Prints data from google sheets file
  * @param {google.auth.OAuth2} auth The authenticated Google OAuth 2.0 client.
  */
-export const printSheet = async (auth) => {
+export const printSheet = async (auth: any, name: string) => {
   const sheets = google.sheets({ version: "v4", auth });
   sheets.spreadsheets.values.get(
     {
@@ -66,7 +66,7 @@ export const printSheet = async (auth) => {
     },
     (err, res) => {
       if (err) {
-        console.error("The API returned an error.");
+        console.error("The API returned an error.", err);
         throw err;
       }
       const rows = res.data.values;
@@ -96,6 +96,7 @@ export const printSheet = async (auth) => {
           }
         }
       }
+      return "1LBvM1Pc-KNHcxIhNWjDoIttF1lV4FDA2uo-07hBYC54";
     }
   );
 };
