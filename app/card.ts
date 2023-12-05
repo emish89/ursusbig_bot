@@ -22,16 +22,18 @@ const manageUser = async (chat: Chat) => {
               await Promise.all([
                 sendMessage(
                   chat.id,
-                  `Ciao ${chat.username}! Ho creato il tuo file, sarà visibile il prima possibile da questo link: ${fileName}`
+                  `Ciao ${chat.username}! Ho creato il tuo file, sarà visibile il prima possibile da questo link: ${fileName}`,
+                  process.env.BOT_TOKEN
                 ).then((res) => {
                   const messageId = res.result.message_id;
                   //pin message
-                  pinChatMessage(chat.id, messageId);
+                  pinChatMessage(chat.id, messageId, process.env.BOT_TOKEN);
                   console.log("pinned card message with id: ", messageId);
                 }),
                 sendMessage(
                   ursusTgId,
-                  `${chat.username} ha creato il suo file scheda, cerca di riempirlo il prima possibile`
+                  `${chat.username} ha creato il suo file scheda, cerca di riempirlo il prima possibile`,
+                  process.env.BOT_TOKEN
                 ),
               ]);
             }
@@ -43,7 +45,8 @@ const manageUser = async (chat: Chat) => {
       const file = response.records[0].fields.file_name;
       await sendMessage(
         chat.id,
-        `Ciao ${chat.username}! Il link dove puoi trovare la gli esercizi è: ${file}`
+        `Ciao ${chat.username}! Il link dove puoi trovare la gli esercizi è: ${file}`,
+        process.env.BOT_TOKEN
       );
     }
   });
@@ -60,7 +63,8 @@ const manageUserSheet = async (chat: Chat) => {
             console.log(message);
             await sendMessage(
               chat.id,
-              `Ciao ${chat.username}! Il link dove puoi trovare la gli esercizi è: ${file}`
+              `Ciao ${chat.username}! Il link dove puoi trovare la gli esercizi è: ${file}`,
+              process.env.BOT_TOKEN
             );
           })
           .catch((err) => {

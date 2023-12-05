@@ -11,7 +11,8 @@ Puoi usare i seguenti comandi: \n
 /docs - Rimanda e pinna il link alla documentazione
 /card - Crea o rimanda e pinna il link alla scheda di allenamento
 /calendar - Ti invia il link con cui puoi prenotare una chiamata con Ursus
-`
+`,
+    process.env.BOT_TOKEN
   );
   return {
     statusCode: 200,

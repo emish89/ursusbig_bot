@@ -7,10 +7,15 @@ export const airTableLink = "appkyyf1lUUVaIW0j";
 
 export const sendMessage: (
   chat_id: number,
-  text: string
-) => Promise<TelegramResponse> = async (chat_id, text) => {
+  text: string,
+  token?: string
+) => Promise<TelegramResponse> = async (
+  chat_id,
+  text,
+  token = process.env.EMISH89_BOT_TOKEN
+) => {
   console.log(
-    `send message url: https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`
+    `send message url: https://api.telegram.org/bot${token}/sendMessage`
   );
   const payload = JSON.stringify({
     chat_id,
@@ -19,7 +24,7 @@ export const sendMessage: (
   const options = {
     hostname: "api.telegram.org",
     port: 443,
-    path: `/bot${process.env.BOT_TOKEN}/sendMessage`,
+    path: `/bot${token}/sendMessage`,
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -32,10 +37,15 @@ export const sendMessage: (
 
 export const pinChatMessage: (
   chat_id: number,
-  message_id: number
-) => Promise<boolean> = async (chat_id, message_id) => {
+  message_id: number,
+  token?: string
+) => Promise<boolean> = async (
+  chat_id,
+  message_id,
+  token = process.env.EMISH89_BOT_TOKEN
+) => {
   console.log(
-    `pin message url: https://api.telegram.org/bot${process.env.BOT_TOKEN}/pinChatMessage`
+    `pin message url: https://api.telegram.org/bot${token}/pinChatMessage`
   );
   const payload = JSON.stringify({
     chat_id,
@@ -44,7 +54,7 @@ export const pinChatMessage: (
   const options = {
     hostname: "api.telegram.org",
     port: 443,
-    path: `/bot${process.env.BOT_TOKEN}/pinChatMessage`,
+    path: `/bot${token}/pinChatMessage`,
     method: "POST",
     headers: {
       "Content-Type": "application/json",
