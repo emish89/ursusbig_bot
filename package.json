@@ -19,11 +19,11 @@
   "homepage": "https://github.com/emish89/ursusbig_bot#readme",
   "dependencies": {
     "@google-cloud/local-auth": "^3.0.0",
-    "@netlify/functions": "^2.1.0",
-    "axios": "^1.5.1",
+    "@netlify/functions": "^2.4.0",
+    "axios": "^1.6.2",
     "googleapis": "^129.0.0"
   },
   "devDependencies": {
-    "@types/node": "20.10.2"
+    "@types/node": "20.10.3"
   }
 }
