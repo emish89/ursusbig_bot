@@ -1,5 +1,5 @@
 import type { Config } from "@netlify/functions";
-import { sendMessage } from "../../app/utils";
+import { getAirTableData, sendMessage } from "../../app/utils";
 const https = require("https");
 
 let datadomeCookie =
@@ -86,32 +86,6 @@ const refreshTGTGToken = () => {
   return call;
 };
 
-const getAirTable = async () => {
-  const url = `https://api.airtable.com/v0/${airTableLink}/tgtg?api_key=${process.env.AIRTABLE_API_KEY}`;
-  return new Promise((resolve, reject) => {
-    https
-      .get(url, (res) => {
-        let chunks: any[] = [];
-        res.on("data", (chunk) => chunks.push(chunk));
-        res.on("end", () => {
-          const resBody = Buffer.concat(chunks).toString("utf8");
-          if (res.statusCode === 200) {
-            console.log(`Call successful - status 200`);
-            resolve(JSON.parse(resBody));
-          } else {
-            console.error(
-              `${res.statusCode} ${res.statusMessage} ${res.headers["content - type"]} ${resBody} `
-            );
-            reject(new Error(resBody));
-          }
-        });
-      })
-      .on("error", (err) => {
-        console.log("Error: " + err.message);
-        reject(err);
-      });
-  });
-};
 const setAirTableValues = async (cookie, lastValue) => {
   const payload = JSON.stringify({
     records: [
@@ -169,7 +143,9 @@ export default async (req: Request) => {
   console.log("Received event! Next invocation at:", next_run);
 
   try {
-    const table: any = await getAirTable();
+    const table = await getAirTableData(
+      `/v0/${airTableLink}/tgtg?api_key=${process.env.AIRTABLE_API_KEY}`
+    );
     console.log(table);
     datadomeCookie = table.records.find((r) => r.id === "recQ75TNQfzYbdTe7")
       .fields.value;

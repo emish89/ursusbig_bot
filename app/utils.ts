@@ -1,9 +1,9 @@
 import axios from "axios";
 import https from "https";
 import { AirTableResponse, TelegramResponse } from "./types";
+import { airTableLink } from "./card";
 
 export const ursusTgId = 112196086;
-export const airTableLink = "appkyyf1lUUVaIW0j";
 
 export const sendMessage: (
   chat_id: number,
@@ -80,11 +80,11 @@ export const parseCommand = (message: string) => {
   return command;
 };
 
-export const getAirTableUserById = async (id: number) => {
+export const getAirTableData = async (path: string) => {
   var options = {
     host: "api.airtable.com",
     port: 443,
-    path: `/v0/${airTableLink}/users?api_key=${process.env.AIRTABLE_API_KEY}&filterByFormula=(%7Btg_id%7D+%3D+${id})`,
+    path: path,
     protocol: "https:",
     method: "GET",
   };
