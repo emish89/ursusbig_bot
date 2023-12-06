@@ -218,17 +218,10 @@ export default async (req: Request) => {
     }
 
     // 👇️️ response structure assume you use proxy integration with API gateway
-    return {
-      statusCode: 200,
-      headers: { "Content-Type": "application/json" },
-      body: { status: "ok" },
-    };
+    return new Response("OK");
   } catch (error) {
     console.log("Error is: 👉️", error);
-    return {
-      statusCode: 400,
-      body: error.message,
-    };
+    return new Response("KO");
   }
 };
 
