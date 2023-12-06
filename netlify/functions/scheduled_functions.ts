@@ -1,4 +1,5 @@
 import type { Config } from "@netlify/functions";
+import { sendMessage } from "../../app/utils";
 const https = require("https");
 
 let datadomeCookie =
@@ -37,24 +38,6 @@ const postCall = (options, payload) => {
     req.write(payload);
     req.end();
   });
-};
-
-const postTelegramRequest = (body) => {
-  console.log("start postTelegramRequest");
-  const payload = JSON.stringify(body);
-  const options = {
-    hostname: "api.telegram.org",
-    port: 443,
-    path: "/bot" + process.env.EMISH89_BOT_TOKEN + "/sendMessage",
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Content-Length": payload.length,
-    },
-  };
-  const call = postCall(options, payload);
-  console.log("end postTelegramRequest");
-  return call;
 };
 
 const getOptions = (path, payloadLength, token) => {
@@ -203,35 +186,33 @@ export default async (req: Request) => {
       (item) => !(item.items_available <= 0)
     );
     if (availableItems.length > 0) {
-      const payload = {
-        chat_id: "112196086",
-        text:
-          "Le offerte disponibili sono " +
-          availableItems.length +
-          ": \n" +
-          availableItems
-            .map((item) => {
-              return (
-                item.display_name +
-                " -> " +
-                item.items_available +
-                " disponibili - dalle " +
-                new Date(item.pickup_interval.start).toLocaleString("it-IT", {
-                  timeZone: "Europe/Rome",
-                }) +
-                " alle " +
-                new Date(item.pickup_interval.end).toLocaleString("it-IT", {
-                  timeZone: "Europe/Rome",
-                })
-              );
-            })
-            .join("\n\n"),
-      };
       const newValue = JSON.stringify(
         availableItems.map((item) => item.display_name).join(",")
       );
       if (newValue !== lastValue) {
-        await postTelegramRequest(payload);
+        await sendMessage(
+          112196086,
+          "Le offerte disponibili sono " +
+            availableItems.length +
+            ": \n" +
+            availableItems
+              .map((item) => {
+                return (
+                  item.display_name +
+                  " -> " +
+                  item.items_available +
+                  " disponibili - dalle " +
+                  new Date(item.pickup_interval.start).toLocaleString("it-IT", {
+                    timeZone: "Europe/Rome",
+                  }) +
+                  " alle " +
+                  new Date(item.pickup_interval.end).toLocaleString("it-IT", {
+                    timeZone: "Europe/Rome",
+                  })
+                );
+              })
+              .join("\n\n")
+        );
       }
       await setAirTableValues(datadomeCookie, newValue);
     }
