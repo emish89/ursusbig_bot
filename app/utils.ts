@@ -80,15 +80,27 @@ export const parseCommand = (message: string) => {
   return command;
 };
 
-export const getAirTableData = async (path: string) => {
+const airtableOptions = {
+  host: "api.airtable.com",
+  port: 443,
+  protocol: "https:",
+  headers: {
+    "Content-Type": "application/json",
+    Accept: "application/json",
+  },
+};
+
+export const getAirTableData = async (
+  path: string,
+  method: string,
+  payload?: string
+) => {
   var options = {
-    host: "api.airtable.com",
-    port: 443,
+    ...airtableOptions,
     path: path,
-    protocol: "https:",
-    method: "GET",
+    method: method,
   };
-  const user = await doHttpRequest<AirTableResponse>(options);
+  const user = await doHttpRequest<AirTableResponse>(options, payload);
   return user;
 };
 

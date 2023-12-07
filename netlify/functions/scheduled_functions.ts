@@ -9,7 +9,7 @@ const airTableLink = "app8ZlUBxYk4GIIAn";
 const postCall = (options, payload) => {
   return new Promise((resolve, reject) => {
     const req = https.request(options, (res) => {
-      let chunks: any[] = [];
+      let chunks: Uint8Array[] = [];
       res.on("data", (chunk) => chunks.push(chunk));
       res.on("end", () => {
         const resBody = Buffer.concat(chunks).toString("utf8");
@@ -86,7 +86,7 @@ const refreshTGTGToken = () => {
   return call;
 };
 
-const setAirTableValues = async (cookie, lastValue) => {
+const setAirTableValues = async (cookie: string, lastValue: string) => {
   const payload = JSON.stringify({
     records: [
       {
@@ -103,38 +103,11 @@ const setAirTableValues = async (cookie, lastValue) => {
       },
     ],
   });
-  const options = {
-    hostname: "api.airtable.com",
-    path: `/v0/${airTableLink}/tgtg?api_key=${process.env.AIRTABLE_API_KEY}`,
-    method: "PATCH",
-    port: 443,
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    },
-  };
-  return new Promise((resolve, reject) => {
-    const req = https.request(options, (res) => {
-      let chunks: any[] = [];
-      res.on("data", (chunk) => chunks.push(chunk));
-      res.on("end", () => {
-        const resBody = Buffer.concat(chunks).toString("utf8");
-        if (res.statusCode === 200) {
-          console.log(`Call successful - status 200`);
-          resolve(JSON.parse(resBody));
-        } else {
-          console.error(`${res.statusCode} ${res.statusMessage} ${res.headers["content - type"]}
-${resBody}`);
-          reject(new Error(resBody));
-        }
-      });
-    });
-    req.on("error", (error) => {
-      reject(error);
-    });
-    req.write(payload);
-    req.end();
-  });
+  return getAirTableData(
+    `/v0/${airTableLink}/tgtg?api_key=${process.env.AIRTABLE_API_KEY}`,
+    "PATCH",
+    payload
+  );
 };
 
 export default async (req: Request) => {
@@ -144,7 +117,8 @@ export default async (req: Request) => {
 
   try {
     const table = await getAirTableData(
-      `/v0/${airTableLink}/tgtg?api_key=${process.env.AIRTABLE_API_KEY}`
+      `/v0/${airTableLink}/tgtg?api_key=${process.env.AIRTABLE_API_KEY}`,
+      "GET"
     );
     console.log(table);
     datadomeCookie = table.records.find((r) => r.id === "recQ75TNQfzYbdTe7")
