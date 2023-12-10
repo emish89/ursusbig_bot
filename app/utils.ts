@@ -132,9 +132,10 @@ export const createAirTableUser = async (
 
 export const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
-const doHttpRequest = <T>(
+export const doHttpRequest = <T>(
   options: string | https.RequestOptions | URL,
-  payload?: string
+  payload?: string,
+  cookie?: string
 ) => {
   return new Promise<T>((resolve, reject) => {
     const req = https.request(options, (res) => {
@@ -144,6 +145,10 @@ const doHttpRequest = <T>(
         const resBody = Buffer.concat(chunks).toString("utf8");
         if (res.statusCode === 200) {
           console.log(`Call successful - status 200`);
+          if (res.headers["set-cookie"] && cookie) {
+            cookie = res.headers["set-cookie"]?.[0];
+            console.log("new cookie 👉", cookie);
+          }
           resolve(JSON.parse(resBody));
         } else {
           console.error(`${res.statusCode} ${res.statusMessage} ${res.headers["content - type"]}

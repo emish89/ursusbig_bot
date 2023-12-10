@@ -1,46 +1,11 @@
 import type { Config } from "@netlify/functions";
-import { getAirTableData, sendMessage } from "../../app/utils";
-const https = require("https");
+import { doHttpRequest, getAirTableData, sendMessage } from "../../app/utils";
 
 let datadomeCookie =
   "datadome=4B9sg-BaM9rUPzb2PhCqixwrXW3z0d26bireGwL7-s~844neDnkUI7XdJ1apHRavJK8eQjupfaWHchxIr7bYaMcUeWtQC7Yytefop3s1EqBLOEx3lk8dQtab8IzqweDa";
 const airTableLink = "app8ZlUBxYk4GIIAn";
 
-const postCall = (options, payload) => {
-  return new Promise((resolve, reject) => {
-    const req = https.request(options, (res) => {
-      let chunks: Uint8Array[] = [];
-      res.on("data", (chunk) => chunks.push(chunk));
-      res.on("end", () => {
-        const resBody = Buffer.concat(chunks).toString("utf8");
-        if (res.statusCode === 200) {
-          console.log(`Call successful - status 200`);
-          if (res.headers["set-cookie"]) {
-            datadomeCookie = res.headers["set-cookie"]?.[0];
-            console.log("new datadome cookie", datadomeCookie);
-          }
-
-          console.log("datadome is: 👉", datadomeCookie);
-          resolve(JSON.parse(resBody));
-        } else {
-          console.error(
-            `${res.statusCode} ${res.statusMessage} ${res.headers["content-type"]} ${resBody}`
-          );
-          reject(new Error(resBody));
-        }
-      });
-    });
-
-    req.on("error", (error) => {
-      reject(error);
-    });
-
-    req.write(payload);
-    req.end();
-  });
-};
-
-const getOptions = (path, payloadLength, token) => {
+const getOptions = (path: string, payloadLength: number, token: string) => {
   return {
     hostname: "apptoogoodtogo.com",
     path: path,
@@ -60,12 +25,12 @@ const getOptions = (path, payloadLength, token) => {
   };
 };
 
-const postTGTGRequest = (token) => {
+const postTGTGRequest = (token: string) => {
   console.log("start postTGTGRequest");
   const payload =
     '{"paging":{"size":50,"page":0},"user_id":"14292893","bucket":{"filler_type":"Favorites"},"origin":{"longitude":7.66081667075481,"latitude":45.05647115706452},"radius":1}';
   const options = getOptions("/api/discover/v1/bucket", payload.length, token);
-  const call = postCall(options, payload);
+  const call = doHttpRequest(options, payload, datadomeCookie);
   console.log("end postTGTGRequest");
   return call;
 };
@@ -81,7 +46,7 @@ const refreshTGTGToken = () => {
     payload.length,
     token
   );
-  const call = postCall(options, payload);
+  const call = doHttpRequest(options, payload, datadomeCookie);
   console.log("end refreshTGTGToken");
   return call;
 };
