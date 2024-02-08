@@ -49,6 +49,10 @@ getHistoricalData(symbol, startDate, endDate)
     const finalPrice = historicalData[historicalData.length - 1].close;
     const dailyReturns = [];
     const annualReturns = {};
+    let lastOrderPrice = 1;
+    let investedDays = 0;
+    let totalDays = 0;
+    let lastPortfolioValue = Infinity;
 
     for (let i = 1; i < historicalData.length; i++) {
       //console.log('starting value of today', portfolioValuesAlwaysInvested[i - 1], historicalData[i].close, historicalData[i - 1].close)
@@ -86,30 +90,26 @@ getHistoricalData(symbol, startDate, endDate)
       // portafoglio reale (non sempre investito)
       let portfolioValue = portfolioValues[i - 1];
       if (!holding) {
+        investedDays += 1;
         portfolioValue *= (1 + Number(dailyReturn.toFixed(5)));
       }
+      totalDays += 1;
 
       // Se il portafoglio è sceso del 10% rispetto al massimo, vendi
-      if (!holding && portfolioValue / peak < 1 - sellThreshold) {
-        holding = true;
-        portfolioValues[i - 1] -= commission; // Sottrai la commissione per la vendita
+      if (!holding && portfolioValue / peak < 1 - sellThreshold && historicalData[i].close / lastOrderPrice > (1 + buyThreshold)) {
         console.log('Sell at', historicalData[i].date, 'Price:', historicalData[i].close);
+        holding = true;
+        lastPortfolioValue = portfolioValue;
+        portfolioValues[i - 1] -= commission; // Sottrai la commissione per la vendita
+        lastOrderPrice = historicalData[i].close;
       }
-
-      // Logica di acquisto e vendita basata sul massimo drawdown
-      // if (!holding && drawdown <= -sellThreshold) {
-      //   // Vendita
-      //   portfolioValues[i - 1] -= commission; // Sottrai la commissione per la vendita
-      //   investedValue -= portfolioValues[i - 1];
-      //   holding = true;
-      //   console.log('Sell at', historicalData[i].date, 'Price:', historicalData[i].close);
-      // } else if (holding && drawdown >= -buyThreshold) {
-      //   // Ricompra
-      //   portfolioValues[i - 1] -= commission; // Sottrai la commissione per l'acquisto
-      //   investedValue += portfolioValues[i - 1];
-      //   holding = false;
-      //   console.log('Buy at', historicalData[i].date, 'Price:', historicalData[i].close);
-      // }
+      if (holding && historicalData[i].close / lastOrderPrice > 1) {
+        console.log('Buy at', historicalData[i].date, 'Price:', historicalData[i].close, historicalData[i].close / lastOrderPrice);
+        holding = false;
+        lastPortfolioValue = portfolioValue;
+        lastOrderPrice = historicalData[i].close;
+        portfolioValues[i - 1] -= commission; // Sottrai la commissione per l'acquisto
+      }
 
       portfolioValues.push(portfolioValue);
     }
@@ -126,6 +126,7 @@ getHistoricalData(symbol, startDate, endDate)
       'Total yield %:', (portfolioValuesAlwaysInvested[portfolioValuesAlwaysInvested.length - 1] - investedValue) * 100 / investedValue);
     console.log('Standard deviation:', deviation);
     console.log('Maximum drawdown:', maxDrawdown);
+    console.log('Invested days:', investedDays, 'Total days:', totalDays);
 
     console.log('Invested:', investedValue, 'Final:', portfolioValues[portfolioValues.length - 1],
       'Total yield %:', (portfolioValues[portfolioValues.length - 1] - investedValue) * 100 / investedValue);
