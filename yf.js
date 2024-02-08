@@ -31,7 +31,9 @@ const startingValue = 100000;
 const monthlyInvestment = 1500;
 const commission = 5; // Commissione per ogni acquisto mensile
 let investedValue = startingValue;
+let maxDrawdownAlwaysInvested = 0;
 let maxDrawdown = 0;
+let peakAlwaysInvested = -Infinity;
 let peak = -Infinity;
 const sellThreshold = 0.1; // Soglia di vendita (10% inferiore al massimo)
 const buyThreshold = 0.05; // Soglia di ricompra (5% inferiore al massimo)
@@ -47,17 +49,15 @@ getHistoricalData(symbol, startDate, endDate)
     const portfolioValues = [startingValue];
     const startingPrice = historicalData[0].close;
     const finalPrice = historicalData[historicalData.length - 1].close;
-    const dailyReturns = [];
+    const annualReturnsAlwaysInvested = {};
     const annualReturns = {};
     let lastOrderPrice = 1;
     let investedDays = 0;
     let totalDays = 0;
-    let lastPortfolioValue = Infinity;
 
     for (let i = 1; i < historicalData.length; i++) {
       //console.log('starting value of today', portfolioValuesAlwaysInvested[i - 1], historicalData[i].close, historicalData[i - 1].close)
       const dailyReturn = calculateDailyReturn(historicalData, i);
-      dailyReturns.push(dailyReturn);
       //if is last working day of the month, add monthly investment
       if (historicalData[i].date.getDate() === new Date(historicalData[i].date.getFullYear(), historicalData[i].date.getMonth() + 1, 0).getDate()) {
         portfolioValuesAlwaysInvested[i - 1] += monthlyInvestment;
@@ -74,15 +74,20 @@ getHistoricalData(symbol, startDate, endDate)
       const portfolioValueAlwaysInvested = portfolioValuesAlwaysInvested[i - 1] * (1 + Number(dailyReturn.toFixed(5)));
 
       const year = historicalData[i].date.getFullYear();
+      if (!annualReturnsAlwaysInvested[year]) {
+        annualReturnsAlwaysInvested[year] = [];
+      }
+      annualReturnsAlwaysInvested[year].push(dailyReturn);
       if (!annualReturns[year]) {
         annualReturns[year] = [];
       }
-      annualReturns[year].push(dailyReturn);
-
+      if (!holding) {
+        annualReturns[year].push(dailyReturn);
+      }
       // Calcolo del massimo drawdown
-      peak = Math.max(peak, portfolioValueAlwaysInvested);
-      const drawdown = (portfolioValueAlwaysInvested - peak) / peak;
-      maxDrawdown = Math.min(maxDrawdown, drawdown);
+      peakAlwaysInvested = Math.max(peakAlwaysInvested, portfolioValueAlwaysInvested);
+      const drawdown = (portfolioValueAlwaysInvested - peakAlwaysInvested) / peakAlwaysInvested;
+      maxDrawdownAlwaysInvested = Math.min(maxDrawdownAlwaysInvested, drawdown);
 
       //console.log(historicalData[i].date, dailyReturn, portfolioValue);
       portfolioValuesAlwaysInvested.push(portfolioValueAlwaysInvested);
@@ -93,25 +98,36 @@ getHistoricalData(symbol, startDate, endDate)
         investedDays += 1;
         portfolioValue *= (1 + Number(dailyReturn.toFixed(5)));
       }
+      peak = Math.max(peak, portfolioValue);
+      const dd = (portfolioValue - peak) / peak;
+      if (!holding) {
+        if (maxDrawdown > dd) console.log('drawdown', historicalData[i].date, dd, peak, portfolioValue, historicalData[i].close)
+        maxDrawdown = Math.min(maxDrawdown, dd);
+      }
+
       totalDays += 1;
 
       // Se il portafoglio è sceso del 10% rispetto al massimo, vendi
-      if (!holding && portfolioValue / peak < 1 - sellThreshold && historicalData[i].close / lastOrderPrice > (1 + buyThreshold)) {
+      if (!holding && portfolioValue / peakAlwaysInvested < 1 - sellThreshold && historicalData[i].close / lastOrderPrice > (1 + buyThreshold)) {
         console.log('Sell at', historicalData[i].date, 'Price:', historicalData[i].close);
         holding = true;
-        lastPortfolioValue = portfolioValue;
         portfolioValues[i - 1] -= commission; // Sottrai la commissione per la vendita
         lastOrderPrice = historicalData[i].close;
       }
-      if (holding && historicalData[i].close / lastOrderPrice > 1) {
-        console.log('Buy at', historicalData[i].date, 'Price:', historicalData[i].close, historicalData[i].close / lastOrderPrice);
+      if (holding && historicalData[i].close / lastOrderPrice > 1) { // TODO Se il prezzo è salito del 0% rispetto all'ultimo acquisto, compra
+        console.log('Buy at', historicalData[i].date, 'Price:', historicalData[i].close);
         holding = false;
-        lastPortfolioValue = portfolioValue;
         lastOrderPrice = historicalData[i].close;
         portfolioValues[i - 1] -= commission; // Sottrai la commissione per l'acquisto
       }
 
       portfolioValues.push(portfolioValue);
+    }
+
+    for (const year in annualReturnsAlwaysInvested) {
+      const sumReturns = annualReturnsAlwaysInvested[year].reduce((acc, val) => acc + val, 0);
+      const averageReturn = sumReturns;
+      annualReturnsAlwaysInvested[year] = averageReturn;
     }
 
     for (const year in annualReturns) {
@@ -120,12 +136,13 @@ getHistoricalData(symbol, startDate, endDate)
       annualReturns[year] = averageReturn;
     }
 
-    const deviation = calculateStandardDeviation(Object.values(annualReturns));
+    const deviation = calculateStandardDeviation(Object.values(annualReturnsAlwaysInvested));
+
     console.log(startingPrice + ' -> ' + finalPrice, 'Total yield %:', (finalPrice - startingPrice) * 100 / startingPrice,
       'Invested:', investedValue, 'Final:', portfolioValuesAlwaysInvested[portfolioValuesAlwaysInvested.length - 1],
       'Total yield %:', (portfolioValuesAlwaysInvested[portfolioValuesAlwaysInvested.length - 1] - investedValue) * 100 / investedValue);
-    console.log('Standard deviation:', deviation);
-    console.log('Maximum drawdown:', maxDrawdown);
+    console.log('Standard deviation always invested:', deviation, 'other investments:', calculateStandardDeviation(Object.values(annualReturns)));
+    console.log('Maximum drawdown always invested:', maxDrawdownAlwaysInvested, 'other investments:', maxDrawdown);
     console.log('Invested days:', investedDays, 'Total days:', totalDays);
 
     console.log('Invested:', investedValue, 'Final:', portfolioValues[portfolioValues.length - 1],
