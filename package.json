@@ -18,13 +18,13 @@
   },
   "homepage": "https://github.com/emish89/ursusbig_bot#readme",
   "dependencies": {
-    "@google-cloud/local-auth": "^3.0.0",
-    "@netlify/functions": "^2.4.0",
-    "axios": "^1.6.2",
-    "googleapis": "^132.0.0",
-    "yahoo-finance": "^0.3.8"
+    "@google-cloud/local-auth": "^3.0.1",
+    "@netlify/functions": "^2.5.1",
+    "axios": "^1.6.7",
+    "googleapis": "^133.0.0",
+    "yahoo-finance2": "^2.9.1"
   },
   "devDependencies": {
-    "@types/node": "20.11.16"
+    "@types/node": "20.11.17"
   }
 }

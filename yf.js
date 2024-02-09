@@ -1,14 +1,12 @@
-const yahooFinance = require('yahoo-finance');
+const yahooFinance2 = require('yahoo-finance2').default;
 
-async function getHistoricalData(symbol, startDate, endDate) {
-  const result = await yahooFinance.historical({
-    symbol: symbol,
-    from: startDate,
-    to: endDate,
+async function getHistoricalData2(symbol, startDate, endDate) {
+  const result = await yahooFinance2.historical(symbol, {
+    period1: startDate,
+    period2: endDate,
   });
   return result;
 }
-
 
 function calculateStandardDeviation(values) {
   const mean = values.reduce((acc, val) => acc + val, 0) / values.length;
@@ -56,11 +54,8 @@ const enableTaxes = true;
 let alreadyTaxed = 0;
 let alreadyInvestedValue = 0;
 
-getHistoricalData(symbol, startDate, endDate)
+getHistoricalData2(symbol, startDate, endDate)
   .then((historicalData) => {
-
-    historicalData = historicalData.reverse();
-
     const startingPrice = historicalData[0].close;
     const finalPrice = historicalData[historicalData.length - 1].close;
 
@@ -116,7 +111,7 @@ getHistoricalData(symbol, startDate, endDate)
         maxDrawdown = Math.min(maxDrawdown, drawdown);
 
         if (drawdown < sellThreshold) {
-          console.log('venduto', historicalData[i].date, portfolioValue, Number(dailyReturn.toFixed(2)));
+          console.log('venduto', historicalData[i].date, historicalData[i].close, Number(dailyReturn.toFixed(2)));
           holding = true;
           lastOrderPrice = historicalData[i].close;
           portfolioValues[i - 1] -= commission;
@@ -139,7 +134,7 @@ getHistoricalData(symbol, startDate, endDate)
       else {
         if (historicalData[i].close > lastOrderPrice * (1 + buyThreshold)) {
           annualReturns[year].push((historicalData[i].close / lastOrderPrice) - 1);
-          console.log('ricomprato', historicalData[i].date, portfolioValue, Number(dailyReturn.toFixed(2)));
+          console.log('ricomprato', historicalData[i].date, historicalData[i].close, Number(dailyReturn.toFixed(2)));
           portfolioValue = portfolioValue * historicalData[i].close / lastOrderPrice; //per adattare al rendimento "perso" prendendo il dato di close
           holding = false;
           //peak = -Infinity;
