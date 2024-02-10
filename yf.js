@@ -47,6 +47,10 @@ function getFixedN(value, n) {
   return Number(value.toFixed(n));
 }
 
+function getAnnualCompoundRate(rate, time) {
+  return Math.pow((1 + rate), 1 / time) - 1;
+}
+
 let investedValue = startingValue;
 let maxDrawdownAlwaysInvested = 0;
 let maxDrawdown = 0;
@@ -84,7 +88,7 @@ getHistoricalData(symbol, startDate, endDate)
         investedValue += monthlyInvestment;
       }
       // se sono nel caso sempre investito, aggiungo il rendimento giornaliero
-      const portfolioValueAlwaysInvested = portfolioValuesAlwaysInvested[i - 1] * (1 + Number(dailyReturn.toFixed(5)));
+      const portfolioValueAlwaysInvested = portfolioValuesAlwaysInvested[i - 1] * (1 + getFixedN(dailyReturn, 5));
 
       // aggiungo i dati ai rendimenti per calcolare la varianza alla fine
       const year = historicalData[i].date.getFullYear();
@@ -112,7 +116,7 @@ getHistoricalData(symbol, startDate, endDate)
         // sono investito, dopo aver calcolati i valori, valuto se devo vendere
         annualReturns[year].push(dailyReturn);
         investedDays += 1;
-        portfolioValue *= (1 + Number(dailyReturn.toFixed(5)));
+        portfolioValue *= (1 + getFixedN(dailyReturn, 5));
 
         // creo il picco e il drawdown, per poterlo utilizzare nei calcoli
         peak = Math.max(peak, portfolioValue);
@@ -121,11 +125,10 @@ getHistoricalData(symbol, startDate, endDate)
 
         // se il drawdown è maggiore della soglia di vendita o sono nell'ultima giornata disponibile (per la tassazione), vendo
         if (drawdown < sellThreshold || i === (historicalData.length - 1)) {
-          console.log('VENDO', historicalData[i].date, historicalData[i].close, Number(dailyReturn.toFixed(2)));
+          console.log('VENDO', historicalData[i].date, historicalData[i].close, getFixedN(dailyReturn, 2));
           holding = true;
           lastOrderPrice = historicalData[i].close;
           portfolioValues[i - 1] -= commission;
-          // TODO capire se è corretto
           // se devo calcolare le tasse, calcolo la parte di PAC mai tassata e quella già tassata 
           if (enableTaxes) {
             let newlyInPac = 0;
@@ -146,7 +149,7 @@ getHistoricalData(symbol, startDate, endDate)
         // non sono investito, valuto se devo ricomprare
         if (historicalData[i].close > lastOrderPrice * (1 + buyThreshold)) {
           annualReturns[year].push((historicalData[i].close / lastOrderPrice) - 1);
-          console.log('RICOMPRO', historicalData[i].date, historicalData[i].close, Number(dailyReturn.toFixed(2)));
+          console.log('RICOMPRO', historicalData[i].date, historicalData[i].close, getFixedN(dailyReturn, 2));
           portfolioValue = portfolioValue * historicalData[i].close / lastOrderPrice; //per adattare al rendimento "perso" prendendo il dato di close
           holding = false;
           portfolioValues[i - 1] -= commission;
@@ -154,7 +157,7 @@ getHistoricalData(symbol, startDate, endDate)
         }
         // nel caso del max drawdown, se il drawdown è maggiore della soglia, ricompro
         if (enableMaxDrawdownInvesting && historicalData[i].close / lastOrderPrice < (1 - maximumDrawdownBuy)) {
-          console.log('drawdown pesante! RICOMPRO', historicalData[i].date, historicalData[i].close, Number(dailyReturn.toFixed(2)));
+          console.log('drawdown pesante! RICOMPRO', historicalData[i].date, historicalData[i].close, getFixedN(dailyReturn, 2));
           holding = false;
           portfolioValues[i - 1] -= commission;
           lastOrderPrice = historicalData[i].close;
@@ -178,27 +181,34 @@ getHistoricalData(symbol, startDate, endDate)
       annualReturns[year] = averageReturn;
     }
 
+    const lastValueAlwaysInvested = portfolioValuesAlwaysInvested[portfolioValuesAlwaysInvested.length - 1];
+    const finalValueStrategy = (portfolioValues[portfolioValues.length - 1] - investedValue) / investedValue;
+    const valueAfterTaxesAlwaysInvested = calculateValueAfterTax(lastValueAlwaysInvested, investedValue);
+    const finalValueAlwaysInvested = (valueAfterTaxesAlwaysInvested - investedValue) / investedValue;
+
     // calcolo deviazione standard e valore dopo le tasse
     const deviation = calculateStandardDeviation(Object.values(annualReturnsAlwaysInvested));
-    const valueAfterTaxesAlwaysInvested = calculateValueAfterTax(portfolioValuesAlwaysInvested[portfolioValuesAlwaysInvested.length - 1], investedValue);
 
-    console.log('CASO SEMPRE INVESTITO:');
+
+    console.log('\nCASO SEMPRE INVESTITO:');
     console.log('RENDIMENTO QUOTA %:', getFixedN((finalPrice - startingPrice) * 100 / startingPrice, 2),
-      'INVESTITO:', investedValue, 'VALORE FINALE:', getFixedN(portfolioValuesAlwaysInvested[portfolioValuesAlwaysInvested.length - 1], 2),
-      'VALORE FINALE PAC %:', getFixedN((portfolioValuesAlwaysInvested[portfolioValuesAlwaysInvested.length - 1] - investedValue) * 100 / investedValue, 2),
+      'INVESTITO:', investedValue, 'VALORE FINALE:', getFixedN(lastValueAlwaysInvested, 2),
+      'VALORE FINALE PAC %:', getFixedN(100 * (lastValueAlwaysInvested - investedValue) / investedValue, 2),
       'VALORE POST TASSAZIONE', getFixedN(valueAfterTaxesAlwaysInvested, 2),
-      'RENDIMENTO POST TASSAZIONE TOTALE %', getFixedN((valueAfterTaxesAlwaysInvested - investedValue) * 100 / investedValue, 2)
+      'RENDIMENTO POST TASSAZIONE TOTALE %', getFixedN(100 * finalValueAlwaysInvested, 2)
     );
     console.log('DEVIAZIONE STANDARD', getFixedN(deviation, 3), 'MAX DRAWDOWN %', getFixedN(maxDrawdownAlwaysInvested * 100, 2));
 
     console.log('\nCASO STRATEGIA:');
     console.log(
       'INVESTITO:', investedValue, 'VALORE FINALE:', getFixedN(portfolioValues[portfolioValues.length - 1], 2),
-      'VALORE FINALE PAC POST TASSAZIONE %:', getFixedN((portfolioValues[portfolioValues.length - 1] - investedValue) * 100 / investedValue, 2),
+      'VALORE FINALE PAC POST TASSAZIONE %:', getFixedN(100 * finalValueStrategy, 2),
     );
-    console.log('DEVIAZIONE STANDARD', getFixedN(calculateStandardDeviation(Object.values(annualReturns)), 3), 'MAX DRAWDOWN %', getFixedN(maxDrawdown * 100, 2),
-      'INVESTITO', investedDays, 'GIORNI SU UN TOTALE DI', totalDays);
+    console.log('DEVIAZIONE STANDARD', getFixedN(calculateStandardDeviation(Object.values(annualReturns)), 3), 'MAX DRAWDOWN %', getFixedN(maxDrawdown * 100, 2));
+    console.log('INVESTITO', investedDays, 'GIORNI SU UN TOTALE DI', totalDays);
 
+    console.log('\nRENDIMENTO ANNUALE MEDIO SEMPRE INVESTITO %', getFixedN(100 * getAnnualCompoundRate(finalValueAlwaysInvested, Object.keys(annualReturnsAlwaysInvested).length), 2));
+    console.log('RENDIMENTO ANNUALE MEDIO STRATEGIA %', getFixedN(100 * getAnnualCompoundRate(finalValueStrategy, Object.keys(annualReturns).length), 2));
   })
   .catch((error) => {
     console.error('Error fetching historical data:', error);
