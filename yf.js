@@ -1,5 +1,5 @@
 const yahooFinance2 = require('yahoo-finance2').default;
-
+const nodeplotlib = require('nodeplotlib');
 
 const symbol = 'SPY';
 const startDate = '2014-01-01';
@@ -66,7 +66,9 @@ const portfolioValuesAlwaysInvested = [startingValue];
 const portfolioValues = [startingValue];
 const annualReturnsAlwaysInvested = {};
 const annualReturns = {};
-
+const sellDates = [];
+const buyDates = [];
+const buyDrawdownDates = [];
 
 getHistoricalData(symbol, startDate, endDate)
   .then((historicalData) => {
@@ -121,11 +123,16 @@ getHistoricalData(symbol, startDate, endDate)
         // creo il picco e il drawdown, per poterlo utilizzare nei calcoli
         peak = Math.max(peak, portfolioValue);
         const drawdown = (portfolioValue - peak) / peak;
+        if (drawdown < maxDrawdown) {
+          console.log('drawdown!', historicalData[i].date, drawdown, portfolioValue, peak);
+        }
         maxDrawdown = Math.min(maxDrawdown, drawdown);
+
 
         // se il drawdown è maggiore della soglia di vendita o sono nell'ultima giornata disponibile (per la tassazione), vendo
         if (drawdown < sellThreshold || i === (historicalData.length - 1)) {
           console.log('VENDO', historicalData[i].date, historicalData[i].close, getFixedN(dailyReturn, 2));
+          sellDates.push(historicalData[i].date);
           holding = true;
           lastOrderPrice = historicalData[i].close;
           portfolioValues[i - 1] -= commission;
@@ -150,6 +157,7 @@ getHistoricalData(symbol, startDate, endDate)
         if (historicalData[i].close > lastOrderPrice * (1 + buyThreshold)) {
           annualReturns[year].push((historicalData[i].close / lastOrderPrice) - 1);
           console.log('RICOMPRO', historicalData[i].date, historicalData[i].close, getFixedN(dailyReturn, 2));
+          buyDates.push(historicalData[i].date);
           portfolioValue = portfolioValue * historicalData[i].close / lastOrderPrice; //per adattare al rendimento "perso" prendendo il dato di close
           holding = false;
           portfolioValues[i - 1] -= commission;
@@ -158,6 +166,7 @@ getHistoricalData(symbol, startDate, endDate)
         // nel caso del max drawdown, se il drawdown è maggiore della soglia, ricompro
         if (enableMaxDrawdownInvesting && historicalData[i].close / lastOrderPrice < (1 - maximumDrawdownBuy)) {
           console.log('drawdown pesante! RICOMPRO', historicalData[i].date, historicalData[i].close, getFixedN(dailyReturn, 2));
+          buyDrawdownDates.push(historicalData[i].date);
           holding = false;
           portfolioValues[i - 1] -= commission;
           lastOrderPrice = historicalData[i].close;
@@ -209,6 +218,81 @@ getHistoricalData(symbol, startDate, endDate)
 
     console.log('\nRENDIMENTO ANNUALE MEDIO SEMPRE INVESTITO %', getFixedN(100 * getAnnualCompoundRate(finalValueAlwaysInvested, Object.keys(annualReturnsAlwaysInvested).length), 2));
     console.log('RENDIMENTO ANNUALE MEDIO STRATEGIA %', getFixedN(100 * getAnnualCompoundRate(finalValueStrategy, Object.keys(annualReturns).length), 2));
+
+    // Dati grafico
+    const labels = historicalData.map((data) => data.date);
+    const sellShapes = sellDates.map((date) => {
+      return {
+        type: 'line',
+        x0: date,
+        y0: 0,
+        x1: date,
+        y1: Math.max(...portfolioValues),
+        line: {
+          color: 'red',
+          width: 1.5,
+          dash: 'dot'
+        }
+      }
+    });
+    const buyShapes = buyDates.map((date) => {
+      return {
+        type: 'line',
+        x0: date,
+        y0: 0,
+        x1: date,
+        y1: Math.max(...portfolioValues),
+        line: {
+          color: 'blue',
+          width: 1.5,
+          dash: 'dot'
+        }
+      }
+    });
+    const buyDrawdownShapes = buyDrawdownDates.map((date) => {
+      return {
+        type: 'line',
+        x0: date,
+        y0: 0,
+        x1: date,
+        y1: Math.max(...portfolioValues),
+        line: {
+          color: 'grey',
+          width: 1.5,
+          dash: 'dot'
+        }
+      }
+    });
+    const data = [{
+      x: labels,
+      y: portfolioValuesAlwaysInvested,
+      type: 'line',
+      name: 'Sempre investito'
+    }, {
+      x: labels,
+      y: portfolioValues,
+      type: 'lines',
+      name: 'Strategia'
+    }];
+
+    // Opzioni del layout
+    const layout = {
+      title: 'Andamento del Patrimonio investito in ' + symbol,
+      xaxis: {
+        title: 'Date'
+      },
+      yaxis: {
+        title: 'Patrimonio'
+      },
+      shapes: [
+        //...sellShapes,
+        //...buyShapes,
+        ...buyDrawdownShapes
+      ]
+    };
+    // Crea il grafico
+    nodeplotlib.plot(data, layout);
+
   })
   .catch((error) => {
     console.error('Error fetching historical data:', error);
