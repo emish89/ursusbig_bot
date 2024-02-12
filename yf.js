@@ -62,8 +62,8 @@ let investedDays = 0;
 let totalDays = 0;
 let alreadyTaxed = 0;
 let alreadyInvestedValue = 0;
-const portfolioValuesAlwaysInvested = [startingValue];
-const portfolioValues = [startingValue];
+const portfolioValuesAlwaysInvested = [startingValue]; // tutti i valori del portafoglio sempre investito
+const portfolioValues = [startingValue]; // tutti i valori del portafoglio "strategia"
 const annualReturnsAlwaysInvested = {};
 const annualReturns = {};
 const sellDates = [];
@@ -131,7 +131,7 @@ getHistoricalData(symbol, startDate, endDate)
 
         // se il drawdown è maggiore della soglia di vendita o sono nell'ultima giornata disponibile (per la tassazione), vendo
         if (drawdown < sellThreshold || i === (historicalData.length - 1)) {
-          console.log('VENDO', historicalData[i].date, historicalData[i].close, getFixedN(dailyReturn, 2));
+          console.log('VENDO', historicalData[i].date, historicalData[i].close, getFixedN(dailyReturn, 3), sellThreshold - drawdown);
           sellDates.push(historicalData[i].date);
           holding = true;
           lastOrderPrice = historicalData[i].close;
@@ -154,19 +154,23 @@ getHistoricalData(symbol, startDate, endDate)
       }
       else {
         // non sono investito, valuto se devo ricomprare
-        if (historicalData[i].close > lastOrderPrice * (1 + buyThreshold)) {
-          annualReturns[year].push((historicalData[i].close / lastOrderPrice) - 1);
-          console.log('RICOMPRO', historicalData[i].date, historicalData[i].close, getFixedN(dailyReturn, 2));
+        const buyPrice = lastOrderPrice * (1 + buyThreshold);
+        if (historicalData[i].close > buyPrice) {
+          annualReturns[year].push((historicalData[i].close / buyPrice) - 1);
+          console.log('RICOMPRO', historicalData[i].date, historicalData[i].close, getFixedN(dailyReturn, 3), portfolioValue);
           buyDates.push(historicalData[i].date);
-          portfolioValue = portfolioValue * historicalData[i].close / lastOrderPrice; //per adattare al rendimento "perso" prendendo il dato di close
+          portfolioValue = portfolioValue * historicalData[i].close / buyPrice; //per adattare al rendimento "perso" prendendo il dato di close
           holding = false;
           portfolioValues[i - 1] -= commission;
           lastOrderPrice = historicalData[i].close;
         }
         // nel caso del max drawdown, se il drawdown è maggiore della soglia, ricompro
-        if (enableMaxDrawdownInvesting && historicalData[i].close / lastOrderPrice < (1 - maximumDrawdownBuy)) {
-          console.log('drawdown pesante! RICOMPRO', historicalData[i].date, historicalData[i].close, getFixedN(dailyReturn, 2));
+        const drawdownBuyPrice = lastOrderPrice * (1 - maximumDrawdownBuy);
+        if (enableMaxDrawdownInvesting && historicalData[i].close < drawdownBuyPrice) {
+          annualReturns[year].push(historicalData[i].close / drawdownBuyPrice - 1);
+          console.log('drawdown pesante! RICOMPRO', historicalData[i].date, historicalData[i].close, getFixedN(dailyReturn, 2), historicalData[i].close / drawdownBuyPrice);
           buyDrawdownDates.push(historicalData[i].date);
+          portfolioValue = portfolioValue * historicalData[i].close / drawdownBuyPrice;
           holding = false;
           portfolioValues[i - 1] -= commission;
           lastOrderPrice = historicalData[i].close;
@@ -227,7 +231,7 @@ getHistoricalData(symbol, startDate, endDate)
         x0: date,
         y0: 0,
         x1: date,
-        y1: Math.max(...portfolioValues),
+        y1: Math.max(...portfolioValues, ...portfolioValuesAlwaysInvested) * 1.05,
         line: {
           color: 'red',
           width: 1.5,
@@ -241,7 +245,7 @@ getHistoricalData(symbol, startDate, endDate)
         x0: date,
         y0: 0,
         x1: date,
-        y1: Math.max(...portfolioValues),
+        y1: Math.max(...portfolioValues, ...portfolioValuesAlwaysInvested) * 1.05,
         line: {
           color: 'blue',
           width: 1.5,
@@ -255,7 +259,7 @@ getHistoricalData(symbol, startDate, endDate)
         x0: date,
         y0: 0,
         x1: date,
-        y1: Math.max(...portfolioValues),
+        y1: Math.max(...portfolioValues, ...portfolioValuesAlwaysInvested) * 1.05,
         line: {
           color: 'grey',
           width: 1.5,
@@ -263,6 +267,33 @@ getHistoricalData(symbol, startDate, endDate)
         }
       }
     });
+
+    const outOfMarketIntervals = sellDates.map(sd => {
+      const date = buyDates.find(bd => bd > sd);
+      const drawdownDate = buyDrawdownDates.find(dd => dd > sd);
+      let finalDate = new Date(endDate);
+      if (date) {
+        if (drawdownDate) {
+          finalDate = Math.min(date, drawdownDate);
+        }
+        else {
+          finalDate = date;
+        }
+      }
+      else if (drawdownDate) {
+        finalDate = drawdownDate;
+      }
+      return {
+        type: 'rect',
+        layer: 'below',
+        xref: 'x', yref: 'paper',
+        x0: sd, x1: finalDate,
+        y0: 0, y1: 1,
+        fillcolor: 'rgba(200,200,200,0.5)',
+        line: { width: 0 }
+      }
+    });
+
     const data = [{
       x: labels,
       y: portfolioValuesAlwaysInvested,
@@ -287,7 +318,8 @@ getHistoricalData(symbol, startDate, endDate)
       shapes: [
         //...sellShapes,
         //...buyShapes,
-        ...buyDrawdownShapes
+        ...buyDrawdownShapes,
+        ...outOfMarketIntervals
       ]
     };
     // Crea il grafico
