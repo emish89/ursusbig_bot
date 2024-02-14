@@ -161,6 +161,8 @@ getHistoricalData(symbol, startDate, endDate)
           buyDates.push(historicalData[i].date);
           portfolioValue = portfolioValue * historicalData[i].close / buyPrice; //per adattare al rendimento "perso" prendendo il dato di close
           holding = false;
+          // qui aggiorno il picco per fare in modo che non esca il giorno dopo l'ingresso.
+          peak = peak * 0.95;
           portfolioValues[i - 1] -= commission;
           lastOrderPrice = historicalData[i].close;
         }
@@ -172,6 +174,8 @@ getHistoricalData(symbol, startDate, endDate)
           buyDrawdownDates.push(historicalData[i].date);
           portfolioValue = portfolioValue * historicalData[i].close / drawdownBuyPrice;
           holding = false;
+          // qui aggiorno il picco per fare in modo che non esca il giorno dopo l'ingresso.
+          peak = peak * 0.95;
           portfolioValues[i - 1] -= commission;
           lastOrderPrice = historicalData[i].close;
         }
@@ -206,7 +210,7 @@ getHistoricalData(symbol, startDate, endDate)
     console.log('\nCASO SEMPRE INVESTITO:');
     console.log('RENDIMENTO QUOTA %:', getFixedN((finalPrice - startingPrice) * 100 / startingPrice, 2),
       'INVESTITO:', investedValue, 'VALORE FINALE:', getFixedN(lastValueAlwaysInvested, 2),
-      'VALORE FINALE PAC %:', getFixedN(100 * (lastValueAlwaysInvested - investedValue) / investedValue, 2),
+      'INCREMENTO VALORE FINALE PAC %:', getFixedN(100 * (lastValueAlwaysInvested - investedValue) / investedValue, 2),
       'VALORE POST TASSAZIONE', getFixedN(valueAfterTaxesAlwaysInvested, 2),
       'RENDIMENTO POST TASSAZIONE TOTALE %', getFixedN(100 * finalValueAlwaysInvested, 2)
     );
@@ -223,7 +227,7 @@ getHistoricalData(symbol, startDate, endDate)
     console.log('\nRENDIMENTO ANNUALE MEDIO SEMPRE INVESTITO %', getFixedN(100 * getAnnualCompoundRate(finalValueAlwaysInvested, Object.keys(annualReturnsAlwaysInvested).length), 2));
     console.log('RENDIMENTO ANNUALE MEDIO STRATEGIA %', getFixedN(100 * getAnnualCompoundRate(finalValueStrategy, Object.keys(annualReturns).length), 2));
 
-    // Dati grafico
+    // Da qui in poi sono tutti parametri per il grafico
     const labels = historicalData.map((data) => data.date);
     const sellShapes = sellDates.map((date) => {
       return {
