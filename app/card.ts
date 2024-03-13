@@ -12,7 +12,7 @@ export const airTableLink = "appkyyf1lUUVaIW0j";
 
 const manageUser = async (chat: Chat) => {
   await getAirTableData(
-    `/v0/${airTableLink}/users?api_key=${process.env.AIRTABLE_API_KEY}&filterByFormula=(%7Btg_id%7D+%3D+${chat.id})`,
+    `/v0/${airTableLink}/users?filterByFormula=(%7Btg_id%7D+%3D+${chat.id})`,
     "GET"
   ).then(async (response) => {
     if (response.records.length === 0) {
@@ -59,7 +59,7 @@ const manageUser = async (chat: Chat) => {
 
 const manageUserSheet = async (chat: Chat) => {
   await getAirTableData(
-    `/v0/${airTableLink}/users?api_key=${process.env.AIRTABLE_API_KEY}&filterByFormula=(%7Btg_id%7D+%3D+${chat.id})`,
+    `/v0/${airTableLink}/users?filterByFormula=(%7Btg_id%7D+%3D+${chat.id})`,
     "GET"
   ).then(async (response) => {
     if (response.records.length !== 0) {

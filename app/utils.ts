@@ -85,6 +85,7 @@ const airtableOptions = {
   port: 443,
   protocol: "https:",
   headers: {
+    Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}`,
     "Content-Type": "application/json",
     Accept: "application/json",
   },
@@ -117,6 +118,7 @@ export const createAirTableUser = async (
       tg_id: id,
     },
   };
+
   const res = await axios.post(
     `https://api.airtable.com/v0/${airTableLink}/users`,
     data,

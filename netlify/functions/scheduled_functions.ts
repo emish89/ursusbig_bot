@@ -68,11 +68,7 @@ const setAirTableValues = async (cookie: string, lastValue: string) => {
       },
     ],
   });
-  return getAirTableData(
-    `/v0/${airTableLink}/tgtg?api_key=${process.env.AIRTABLE_API_KEY}`,
-    "PATCH",
-    payload
-  );
+  return getAirTableData(`/v0/${airTableLink}/tgtg`, "PATCH", payload);
 };
 
 export default async (req: Request) => {
@@ -81,10 +77,7 @@ export default async (req: Request) => {
   console.log("Received event! Next invocation at:", next_run);
 
   try {
-    const table = await getAirTableData(
-      `/v0/${airTableLink}/tgtg?api_key=${process.env.AIRTABLE_API_KEY}`,
-      "GET"
-    );
+    const table = await getAirTableData(`/v0/${airTableLink}/tgtg`, "GET");
     console.log(table);
     datadomeCookie = table.records.find((r) => r.id === "recQ75TNQfzYbdTe7")
       .fields.value;
