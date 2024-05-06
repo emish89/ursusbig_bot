@@ -21,7 +21,7 @@
     "@google-cloud/local-auth": "^3.0.1",
     "@netlify/functions": "^2.6.0",
     "axios": "^1.6.7",
-    "googleapis": "^135.0.0",
+    "googleapis": "^136.0.0",
     "nodeplotlib": "^1.1.2",
     "yahoo-finance2": "^2.10.0"
   },
