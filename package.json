@@ -19,7 +19,7 @@
   "homepage": "https://github.com/emish89/ursusbig_bot#readme",
   "dependencies": {
     "@google-cloud/local-auth": "^3.0.1",
-    "@netlify/functions": "^2.6.0",
+    "@netlify/functions": "^3.0.0",
     "axios": "^1.6.7",
     "googleapis": "^144.0.0",
     "nodeplotlib": "^1.1.2",
