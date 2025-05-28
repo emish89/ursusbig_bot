@@ -26,6 +26,6 @@
     "yahoo-finance2": "^2.13.3"
   },
   "devDependencies": {
-    "@types/node": "22.15.23"
+    "@types/node": "22.15.24"
   }
 }
